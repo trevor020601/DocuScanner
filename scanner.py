@@ -28,3 +28,23 @@ cv2.imshow("Image", img)
 cv2.imshow("Edged", edges)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
+
+# Finds contours in the edged img and displays largest ones
+contours = cv2.findContours(edges.copy(), cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+contours = imutils.grab_contours(contours)
+contours = sorted(contours, key=cv2.contourArea, reverse=True)[:5]
+
+for con in contours:
+    perimeter = cv2.arcLength(con, True)
+    approx = cv2.approxPolyDP(con, 0.02 * perimeter, True)
+
+    # Looks for 4 points (like a square or rectangle)
+    if len(approx) == 4:
+        screenContour = approx
+        break
+
+print("STEP 2: Find Contours of Document")
+cv2.drawContours(img, [screenContour], -1, (0, 255, 0), 2)
+cv2.imshow("Outline", img)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
