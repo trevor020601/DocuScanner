@@ -1,6 +1,8 @@
 import argparse
 import cv2
 import imutils
+from imutils.perspective import four_point_transform
+from skimage.filters import threshold_local
 
 # Creates the argument parser and parses the args
 argParser = argparse.ArgumentParser()
@@ -46,5 +48,19 @@ for con in contours:
 print("STEP 2: Find Contours of Document")
 cv2.drawContours(img, [screenContour], -1, (0, 255, 0), 2)
 cv2.imshow("Outline", img)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+
+# Four Point Transform to get Top-Down View
+topDown = four_point_transform(original, screenContour.reshape(4, 2) * ratio)
+
+# Convert to Grayscale and Threshold for Black/White Effect
+topDown = cv2.cvtColor(topDown, cv2.COLOR_BGR2GRAY)
+threshold = threshold_local(topDown, 11, offset=10, method="gaussian")
+topDown = (topDown > threshold).astype("uint8") * 255
+
+print("STEP 3: Apply Perspective Transformation")
+cv2.imshow("Original", imutils.resize(original, height=650))
+cv2.imshow("Scanned", imutils.resize(topDown, height=650))
 cv2.waitKey(0)
 cv2.destroyAllWindows()
